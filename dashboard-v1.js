@@ -1,6 +1,6 @@
 // StayCozy Dashboard — inject structure
 document.addEventListener('DOMContentLoaded', function() {
-  document.body.innerHTML = `<!-- SIDEBAR -->
+  document.getElementById('sc-dashboard').innerHTML = `<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-mark">StayCozy</div>
