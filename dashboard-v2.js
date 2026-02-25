@@ -1,6 +1,8 @@
-// StayCozy Dashboard — inject structure
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('sc-dashboard').innerHTML = `<!-- SIDEBAR -->
+// StayCozy Dashboard
+(function() {
+  var el = document.getElementById('sc-dashboard');
+  if (!el) return;
+  el.innerHTML = `<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-mark">StayCozy</div>
@@ -525,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('sidebar-url').textContent = WORKER_URL || 'not configured';
 
   function saveConfig() {
-    const url = (document.getElementById('worker-url').value || document.getElementById('settings-worker-url').value).trim().replace(/\\/\$/, '');
+    const url = (document.getElementById('worker-url').value || document.getElementById('settings-worker-url').value).trim().replace(/\\/$/, '');
     const key = (document.getElementById('dashboard-key').value || document.getElementById('settings-dashboard-key').value || '').trim();
     WORKER_URL = url;
     DASHBOARD_KEY = key;
@@ -575,9 +577,9 @@ document.addEventListener('DOMContentLoaded', function() {
     panel.innerHTML = \`
       <div class="response-header">
         <span class="response-label">Response</span>
-        <span class="response-status \${status}">\${status === 'loading' ? '● loading' : status === 'err' ? '✕ error' : '✓ ok'}</span>
+        <span class="response-status ${status}">${status === 'loading' ? '● loading' : status === 'err' ? '✕ error' : '✓ ok'}</span>
       </div>
-      <div class="response-body">\${JSON.stringify(data, null, 2)}</div>
+      <div class="response-body">${JSON.stringify(data, null, 2)}</div>
     \`;
   }
 
@@ -616,9 +618,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const diff = Date.now() - new Date(ts);
         const h = Math.floor(diff / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
-        if (h > 24) return \`\${Math.floor(h/24)}d ago\`;
-        if (h > 0) return \`\${h}h \${m}m ago\`;
-        return \`\${m}m ago\`;
+        if (h > 24) return \`${Math.floor(h/24)}d ago\`;
+        if (h > 0) return \`${h}h ${m}m ago\`;
+        return \`${m}m ago\`;
       };
 
       document.getElementById('stat-last-smart').textContent = renderTime(health.lastSync?.smart);
@@ -641,7 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ['Amenities (WF)', health.webflow?.amenities],
       ];
       document.getElementById('health-output').innerHTML = kvs.map(([k, v]) => \`
-        <div class="kv-row"><span class="kv-key">\${k}</span><span class="kv-val">\${v ?? '—'}</span></div>
+        <div class="kv-row"><span class="kv-key">${k}</span><span class="kv-val">${v ?? '—'}</span></div>
       \`).join('');
     }
   }
@@ -659,12 +661,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const STEPS = ['cities', 'buildings', 'amenities', 'tags', 'units', 'reviews', 'counts'];
 
   function setStep(name, state, result = '') {
-    const icon = document.querySelector(\`#step-\${name} .step-icon\`);
+    const icon = document.querySelector(\`#step-${name} .step-icon\`);
     if (icon) {
-      icon.className = \`step-icon \${state}\`;
+      icon.className = \`step-icon ${state}\`;
       icon.textContent = state === 'done' ? '✓' : state === 'error' ? '✕' : state === 'running' ? '◌' : icon.textContent;
     }
-    const res = document.getElementById(\`step-\${name}-result\`);
+    const res = document.getElementById(\`step-${name}-result\`);
     if (res && result) res.textContent = result;
   }
 
@@ -678,8 +680,8 @@ document.addEventListener('DOMContentLoaded', function() {
         setStep(step, 'error', data.error.substring(0, 60));
       } else {
         const result = data?.processed !== undefined
-          ? \`\${data.processed} processed, \${data.errors || 0} errors\`
-          : data?.synced !== undefined ? \`\${data.synced} synced\`
+          ? \`${data.processed} processed, ${data.errors || 0} errors\`
+          : data?.synced !== undefined ? \`${data.synced} synced\`
           : '✓';
         setStep(step, 'done', result);
       }
@@ -692,7 +694,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const offset = document.getElementById('ind-offset').value;
     const batch = document.getElementById('ind-batchsize').value;
     setLoading('ind-response');
-    const data = await api(\`/sync/\${col}?offset=\${offset}&batchSize=\${batch}\`, 'POST');
+    const data = await api(\`/sync/${col}?offset=${offset}&batchSize=${batch}\`, 'POST');
     showResponse('ind-response', data, data?.error ? 'err' : 'ok');
   }
 
@@ -700,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function() {
   async function runFieldSync() {
     const field = document.getElementById('field-name').value;
     const id = document.getElementById('field-listing-id').value.trim();
-    const path = id ? \`/sync/field/\${field}/\${id}\` : \`/sync/field/\${field}/all\`;
+    const path = id ? \`/sync/field/${field}/${id}\` : \`/sync/field/${field}/all\`;
     setLoading('field-response');
     const data = await api(path, 'POST');
     showResponse('field-response', data, data?.error ? 'err' : 'ok');
@@ -711,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const id = document.getElementById('single-listing-id').value.trim();
     if (!id) { alert('Enter a Guesty listing ID'); return; }
     setLoading('single-response');
-    const data = await api(\`/sync/listing/\${id}\`, 'POST');
+    const data = await api(\`/sync/listing/${id}\`, 'POST');
     showResponse('single-response', data, data?.error ? 'err' : 'ok');
   }
 
@@ -719,20 +721,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const id = document.getElementById('single-listing-id').value.trim();
     if (!id) { alert('Enter a Guesty listing ID'); return; }
     setLoading('single-response');
-    const data = await api(\`/sync/reviews/\${id}\`, 'POST');
+    const data = await api(\`/sync/reviews/${id}\`, 'POST');
     showResponse('single-response', data, data?.error ? 'err' : 'ok');
   }
 
   // ─── INSPECT ──────────────────────────────────────────────
   async function runInspect(endpoint, panelId) {
     setLoading(panelId);
-    const data = await api(\`/inspect/\${endpoint}\`);
+    const data = await api(\`/inspect/${endpoint}\`);
     showResponse(panelId, data, data?.error ? 'err' : 'ok');
   }
 
   async function runInspect2(endpoint, panelId) {
     setLoading(panelId);
-    const data = await api(\`/\${endpoint}\`);
+    const data = await api(\`/${endpoint}\`);
     showResponse(panelId, data, data?.error ? 'err' : 'ok');
   }
 
@@ -741,14 +743,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const view = document.getElementById('lookup-view').value;
     if (!id) { alert('Enter a Guesty listing ID'); return; }
     setLoading('lookup-response');
-    const data = await api(\`/inspect/listing/\${id}\${view}\`);
+    const data = await api(\`/inspect/listing/${id}${view}\`);
     showResponse('lookup-response', data, data?.error ? 'err' : 'ok');
   }
 
   async function runBrowse() {
     const col = document.getElementById('browse-collection').value;
     setLoading('browse-response');
-    const data = await api(\`/inspect/\${col}\`);
+    const data = await api(\`/inspect/${col}\`);
     showResponse('browse-response', data, data?.error ? 'err' : 'ok');
   }
 
@@ -763,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
       ['broken-refs', 'diag-refs'],
     ];
     for (const [ep, el] of endpoints) {
-      const data = await api(\`/inspect/\${ep}\`);
+      const data = await api(\`/inspect/${ep}\`);
       const el2 = document.getElementById(el);
       if (el2) {
         const count = data?.count ?? data?.total ?? data?.missing?.length ?? (Array.isArray(data) ? data.length : '—');
@@ -797,13 +799,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     tbody.innerHTML = filtered.map(u => \`
       <tr>
-        <td>\${u.name || '—'}</td>
-        <td><span class="badge \${u.type === 'MTL' ? 'badge-blue' : 'badge-muted'}">\${u.type || '—'}</span></td>
-        <td>\${u.city || '—'}</td>
-        <td><span class="badge \${u.isActive ? 'badge-green' : 'badge-red'}">\${u.isActive ? 'active' : 'inactive'}</span></td>
-        <td>\${u.lastSynced ? new Date(u.lastSynced).toLocaleDateString('en-GB') : '—'}</td>
+        <td>${u.name || '—'}</td>
+        <td><span class="badge ${u.type === 'MTL' ? 'badge-blue' : 'badge-muted'}">${u.type || '—'}</span></td>
+        <td>${u.city || '—'}</td>
+        <td><span class="badge ${u.isActive ? 'badge-green' : 'badge-red'}">${u.isActive ? 'active' : 'inactive'}</span></td>
+        <td>${u.lastSynced ? new Date(u.lastSynced).toLocaleDateString('en-GB') : '—'}</td>
         <td>
-          <button class="btn btn-ghost btn-sm" onclick="syncOne('\${u.guestyId}')">Sync</button>
+          <button class="btn btn-ghost btn-sm" onclick="syncOne('${u.guestyId}')">Sync</button>
         </td>
       </tr>
     \`).join('');
@@ -811,7 +813,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   async function syncOne(id) {
     setLoading('prop-response');
-    const data = await api(\`/sync/listing/\${id}\`, 'POST');
+    const data = await api(\`/sync/listing/${id}\`, 'POST');
     showResponse('prop-response', data, data?.error ? 'err' : 'ok');
   }
 
@@ -839,9 +841,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!id) { alert('Enter a Guesty ID'); return; }
     setLoading('item-response');
     let data;
-    if (action === 'get') data = await api(\`/webflow/item/guesty-id/\${id}\`);
-    else if (action === 'publish') data = await api(\`/webflow/publish/\${id}\`, 'POST');
-    else if (action === 'unpublish') data = await api(\`/webflow/unpublish/\${id}\`, 'POST');
+    if (action === 'get') data = await api(\`/webflow/item/guesty-id/${id}\`);
+    else if (action === 'publish') data = await api(\`/webflow/publish/${id}\`, 'POST');
+    else if (action === 'unpublish') data = await api(\`/webflow/unpublish/${id}\`, 'POST');
     showResponse('item-response', data, data?.error ? 'err' : 'ok');
   }
 
@@ -851,7 +853,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!data || data.error) return;
     const keys = Object.entries(data).filter(([k]) => !k.startsWith('_'));
     document.getElementById('kv-timestamps').innerHTML = keys.map(([k, v]) => \`
-      <div class="kv-row"><span class="kv-key">\${k}</span><span class="kv-val">\${v || '—'}</span></div>
+      <div class="kv-row"><span class="kv-key">${k}</span><span class="kv-val">${v || '—'}</span></div>
     \`).join('');
   }
 
@@ -870,10 +872,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ─── INIT ─────────────────────────────────────────────────
   if (WORKER_URL) loadOverview();
 </script>`;
-  initDashboard();
-});
 
-function initDashboard() {
 // ─── STATE ────────────────────────────────────────────────
   let WORKER_URL = localStorage.getItem('sc_worker_url') || '';
 
@@ -1229,6 +1228,6 @@ function initDashboard() {
 
   // ─── INIT ─────────────────────────────────────────────────
   if (WORKER_URL) loadOverview();
-  // Init
+
   if (WORKER_URL) loadOverview();
-}
+})();
